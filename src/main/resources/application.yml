@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: warm-tea-and-honest-reviews
+  mongodb:
+    uri: mongodb+srv://hoseopi:password1234!@cluster0.5b3qylf.mongodb.net/?appName=Cluster0
+    database: lotus
+    representation:
+      uuid: standard
+  docker:
+    compose:
+      enabled: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+  tomcat:
+    max-connections: 8192
+    threads:
+      max: 200
+      min-spare: 10
+    accept-count: 100
+    connection-timeout: 10000
+
+app:
+  upload:
+    dir: public/covers
+
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG
