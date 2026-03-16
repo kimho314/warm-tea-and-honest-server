@@ -1,10 +1,3 @@
-좋아, 지금까지 확정된 요구사항을 **모두 반영한 최종 MongoDB Schema 파일**를 하나의 문서 형태로 정리해줄게.
-이 파일은 그대로 `schema.md` 또는 `mongodb-schema.md`로 저장해서 **설계 기준 문서(Single Source of Truth)**로 사용하면 돼.
-
-아래 내용에는 ✅ `admin_users` 컬렉션 + ✅ `book_reviews` 컬렉션 + ✅ 둘 사이의 관계가 모두 포함돼 있어.
-
----
-
 # MongoDB Schema
 
 ## Book Review Admin System
@@ -17,31 +10,33 @@ This document defines the MongoDB schema for the **Book Review Admin System**.
 
 ### Design Goals
 
-* Support **Spring Security form login**
+* Support **Spring Security Basic authentication**
 * Enable **admin-authored book reviews**
 * Keep schema simple and extensible
 * No user registration (admin-only system)
+* Dynamic category management
 
 ---
 
 ## 2. Collections Overview
 
-| Collection Name | Description                           |
-| --------------- | ------------------------------------- |
-| `admin_users`   | Stores admin login credentials        |
-| `book_reviews`  | Stores book reviews created by admins |
+| Collection Name | Description                             | Entity Class         |
+| --------------- | --------------------------------------- | -------------------- |
+| `users`         | Stores admin login credentials          | `UserEntity`         |
+| `book_reviews`  | Stores book reviews created by admins   | `BookReviewEntity`   |
+| `categories`    | Stores book categories/tags             | `CategoryEntity`     |
 
 ---
 
-## 3. `admin_users` Collection
+## 3. `users` Collection
 
 ### 3.1 Purpose
 
 Stores administrator authentication data.
 
-* Used by **Spring Security (form login)**
-* Admin accounts are **manually created by developer**
-* No signup / reset / role hierarchy
+* Used by **Spring Security**
+* Admin accounts are **manually created or via CommandLineRunner**
+* Role-based access control (default role: `ROLE_ADMIN`)
 
 ---
 
@@ -50,9 +45,11 @@ Stores administrator authentication data.
 ```json
 {
   "_id": "ObjectId",
-  "username": "admin",
-  "password": "$2a$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  "createdAt": "2026-01-20T10:30:00Z"
+  "username": "NilKim",
+  "password": "{bcrypt}$2a$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "role": "ROLE_ADMIN",
+  "createdAt": "2026-03-16T18:31:00Z",
+  "updatedAt": "2026-03-16T18:31:00Z"
 }
 ```
 
@@ -60,12 +57,14 @@ Stores administrator authentication data.
 
 ### 3.3 Field Definitions
 
-| Field        | Type     | Required | Description                |
-|--------------| -------- | -------- | -------------------------- |
-| `_id`        | ObjectId | Yes      | Primary key                |
-| `username`   | String   | Yes      | Login identifier           |
-| `password`   | String   | Yes      | BCrypt-hashed password     |
-| `createdAt`  | Date     | Yes      | Account creation timestamp |
+| Field        | Type     | Required | Description                     |
+|--------------| -------- | -------- | ------------------------------- |
+| `_id`        | ObjectId | Yes      | Primary key                     |
+| `username`   | String   | Yes      | Login identifier (unique)       |
+| `password`   | String   | Yes      | Encoded password (e.g., BCrypt) |
+| `role`       | String   | Yes      | User role (e.g., `ROLE_ADMIN`)  |
+| `createdAt`  | Date     | Yes      | Account creation timestamp      |
+| `updatedAt`  | Date     | Yes      | Last modification timestamp     |
 
 ---
 
@@ -89,7 +88,8 @@ Stores administrator authentication data.
 Stores book reviews authored by admins.
 
 * Created via **admin panel**
-* Content is generated from **Word document → HTML**
+* Supports multi-category tagging
+* Stores cover image filenames
 * Public website consumes read-only APIs
 
 ---
@@ -102,10 +102,14 @@ Stores book reviews authored by admins.
   "adminUserId": "ObjectId",
   "title": "Atomic Habits",
   "author": "James Clear",
-  "rating": 4,
-  "reviewDate": "2026-01-18",
-  "coverImageUrl": "/images/atomic-habits.jpg",
-  "contentHtml": "<p>This book explains...</p>",
+  "rating": 4.5,
+  "page": 320,
+  "language": "English",
+  "categories": ["Self-Help", "Psychology"],
+  "publishedAt": "2026-01-18T09:00:00Z",
+  "coverImage": "atomic-habits.jpg",
+  "contents": "<p>This book explains...</p>",
+  "excerpt": "A short summary of the review.",
   "createdAt": "2026-01-18T09:00:00Z",
   "updatedAt": "2026-01-18T09:00:00Z"
 }
@@ -115,18 +119,22 @@ Stores book reviews authored by admins.
 
 ### 4.3 Field Definitions
 
-| Field           | Type     | Required | Description                    |
-| --------------- | -------- | -------- | ------------------------------ |
-| `_id`           | ObjectId | Yes      | Primary key                    |
-| `adminUserId`   | ObjectId | Yes      | Reference to `admin_users._id` |
-| `title`         | String   | Yes      | Book title                     |
-| `author`        | String   | Yes      | Book author                    |
-| `rating`        | Number   | Yes      | Rating (1–5)                   |
-| `reviewDate`    | Date     | Yes      | Review publication date        |
-| `coverImageUrl` | String   | No       | Book cover image path          |
-| `contentHtml`   | String   | Yes      | Review body (HTML)             |
-| `createdAt`     | Date     | Yes      | Creation timestamp             |
-| `updatedAt`     | Date     | Yes      | Last update timestamp          |
+| Field           | Type     | Required | Description                      |
+| --------------- | -------- | -------- | -------------------------------- |
+| `_id`           | ObjectId | Yes      | Primary key                      |
+| `adminUserId`   | ObjectId | Yes      | Reference to `users._id`         |
+| `title`         | String   | Yes      | Book title                       |
+| `author`        | String   | Yes      | Book author                      |
+| `rating`        | Number   | Yes      | Rating (e.g., 0.0 - 5.0)         |
+| `page`          | Number   | Yes      | Number of pages                  |
+| `language`      | String   | Yes      | Book language                    |
+| `categories`    | Array    | Yes      | List of category names (Strings) |
+| `publishedAt`   | Date     | Yes      | Review publication date          |
+| `coverImage`    | String   | Yes      | Filename of the cover image      |
+| `contents`      | String   | Yes      | Review body content              |
+| `excerpt`       | String   | No       | Brief summary of the review      |
+| `createdAt`     | Date     | Yes      | Creation timestamp               |
+| `updatedAt`     | Date     | Yes      | Last update timestamp            |
 
 ---
 
@@ -134,41 +142,72 @@ Stores book reviews authored by admins.
 
 ```js
 {
-  reviewDate: -1,
+  publishedAt: -1,
   adminUserId: 1
 }
 ```
 
-* `reviewDate`: for public listing (latest first)
+* `publishedAt`: for public listing (latest first)
 * `adminUserId`: for admin ownership tracking
 
 ---
 
-## 5. Collection Relationship
+## 5. `categories` Collection
+
+### 5.1 Purpose
+
+Stores a master list of categories used across book reviews.
+
+---
+
+### 5.2 Document Structure
+
+```json
+{
+  "_id": "ObjectId",
+  "name": "Self-Help",
+  "createdAt": "2026-01-18T09:00:00Z",
+  "updatedAt": "2026-01-18T09:00:00Z"
+}
+```
+
+---
+
+### 5.3 Field Definitions
+
+| Field        | Type     | Required | Description                 |
+|--------------| -------- | -------- | --------------------------- |
+| `_id`        | ObjectId | Yes      | Primary key                 |
+| `name`       | String   | Yes      | Category name (unique)      |
+| `createdAt`  | Date     | Yes      | Creation timestamp          |
+| `updatedAt`  | Date     | Yes      | Last modification timestamp |
+
+---
+
+## 6. Collection Relationships
 
 ### Logical Relationship (Application-Level)
 
 ```text
-admin_users (1) ──── (N) book_reviews
+users (1) ──── (N) book_reviews
 ```
 
-* `book_reviews.adminUserId` → `admin_users._id`
-* No MongoDB DBRef (resolved in application layer)
+* `book_reviews.adminUserId` → `users._id`
+* No MongoDB DBRef (resolved in application layer using Spring Data MongoDB)
 
 ---
 
-## 6. Security & Integrity Notes
+## 7. Security & Integrity Notes
 
-* Passwords are **never stored in plain text**
-* Admin identity is resolved from **HTTP session**
-* `adminUserId` is set server-side (not from client)
+* Passwords are **never stored in plain text** (using Spring Security's `PasswordEncoder`)
+* Authentication is handled via **HTTP Basic** (managed by `SecurityConfig`)
+* `adminUserId` is resolved from the authenticated `UserDetails` in `ReviewController`
+* Entities include `createdAt` and `updatedAt` via Spring Data's `@CreatedDate` and `@LastModifiedDate` annotations.
 
 ---
 
-## 7. Future Extensions (Optional)
+## 8. Future Extensions (Optional)
 
-* `isPublished` flag for drafts
+* `isPublished` flag for draft status
 * `slug` field for SEO-friendly URLs
-* Audit log collection for admin actions
-
----
+* Audit log collection for tracking admin actions
