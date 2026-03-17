@@ -31,7 +31,7 @@ EXPOSE 8080
 
 # JVM tuning for container
 ENTRYPOINT ["java", \
-"-XX:MaxRAMPercentage=75", \
+"-XX:MaxRAMPercentage=80", \
 "-XX:+UseG1GC", \
 "-jar", \
 "/app/app.jar"]
