@@ -41,12 +41,6 @@ public class S3ClientTest {
             throw new IOException("fileName is null");
         }
         String key = filePath + "/" + fileName;
-//        S3Resource stored = s3Template.store(
-//            bucketName,
-//            key,
-//            resource.getFilePath()
-//        );
-//        log.info("stored={}", stored.toString());
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
