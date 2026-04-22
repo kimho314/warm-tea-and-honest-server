@@ -1,0 +1,3 @@
+s3:
+  bucket: warm-tea-and-honest
+  file-path: prod

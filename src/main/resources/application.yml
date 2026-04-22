@@ -1,6 +1,17 @@
 spring:
   application:
     name: warm-tea-and-honest-reviews
+  profiles:
+    default: dev
+  cloud:
+    aws:
+      credentials:
+        access-key: AKIA3CMCCEEFPAWJPSVO
+        secret-key: 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
+      region:
+        static: eu-west-2
+      s3:
+        enabled: true
   mongodb:
     uri: mongodb+srv://hoseopi:password1234!@cluster0.5b3qylf.mongodb.net/?appName=Cluster0
     database: lotus
