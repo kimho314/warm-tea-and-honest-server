@@ -1,9 +1,8 @@
 package com.luna.warmteaandhonestreviews.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -21,6 +20,7 @@ import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewRespDto;
 import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
+import com.luna.warmteaandhonestreviews.service.S3Service;
 import com.luna.warmteaandhonestreviews.service.StorageService;
 import com.luna.warmteaandhonestreviews.service.UserService;
 import java.time.LocalDate;
@@ -34,7 +34,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
@@ -66,6 +65,8 @@ public class ReviewControllerTest {
     UserService userService;
     @MockitoBean
     CategoryService categoryService;
+    @MockitoBean
+    S3Service s3Service;
 
     @BeforeEach
     void setUp(WebApplicationContext webApplicationContext,
@@ -94,6 +95,7 @@ public class ReviewControllerTest {
         String coverImage = "test cover image";
         String excerpt = "test excerpt";
         String content = "<html><h1>Hello</html>";
+        String url = "http://test.com";
 
         Mockito.when(reviewService.getReview(adminUserID, id))
             .thenReturn(new ReviewDto(
@@ -109,7 +111,8 @@ public class ReviewControllerTest {
                 createdAt,
                 coverImage,
                 excerpt,
-                content
+                content,
+                url
             ));
 
         Mockito.when(userService.getUserIdByUsername(anyString()))
@@ -139,6 +142,7 @@ public class ReviewControllerTest {
                     fieldWithPath("createdAt").description("review created at"),
                     fieldWithPath("coverImage").description("review cover image"),
                     fieldWithPath("excerpt").description("review excerpt"),
+                    fieldWithPath("imageUrl").description("test url"),
                     fieldWithPath("content").description("review contents"))
             ));
     }
@@ -163,6 +167,8 @@ public class ReviewControllerTest {
         String coverImage = "test cover image";
         String excerpt = "test excerpt";
         String content = "<html><h1>Hello</html>";
+        String url = "http://test.com";
+
         ReviewDto review1 = new ReviewDto(id,
             adminUserId,
             title,
@@ -175,7 +181,9 @@ public class ReviewControllerTest {
             createdAt,
             coverImage,
             excerpt,
-            content);
+            content,
+            url
+        );
         reviewDtos.add(review1);
 
         Mockito.when(reviewService.getReviews(adminUserId, page, offset))
@@ -217,6 +225,7 @@ public class ReviewControllerTest {
                     fieldWithPath("reviews[].coverImage").description("An review's cover image"),
                     fieldWithPath("reviews[].excerpt").description("An review's excerpt"),
                     fieldWithPath("reviews[].content").description("review contents"),
+                    fieldWithPath("reviews[].imageUrl").description("test url"),
                     fieldWithPath("total").description("Total number of reviews"),
                     fieldWithPath("page").description("Current page number"),
                     fieldWithPath("offset").description("Current offset")
@@ -237,8 +246,9 @@ public class ReviewControllerTest {
 
         Mockito.when(reviewService.getByTitle("test title"))
             .thenReturn(Optional.empty());
-        Mockito.doNothing().when(storageService).store(cover);
-        Mockito.when(reviewService.save(Mockito.any()))
+        Mockito.when(s3Service.getURL(any())).thenReturn(
+            "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg");
+        Mockito.when(reviewService.save(any()))
             .thenReturn(new SaveReviewRespDto(UUID.randomUUID().toString()));
         Mockito.when(userService.getUserIdByUsername(anyString()))
             .thenReturn(adminUserId);
@@ -285,18 +295,48 @@ public class ReviewControllerTest {
         String adminUserId = "162a59e1-571f-42a3-a41a-edc83b03618a";
         String coverImage = "test cover image";
 
-        Mockito.when(reviewService.getReviewImage(anyString(), anyString()))
-            .thenReturn(coverImage);
-        ClassPathResource classPathResource = new ClassPathResource("IlkbaharRuyasi.jpg");
-        Mockito.when(storageService.loadAsResource(anyString()))
-            .thenReturn(classPathResource);
+        List<ReviewDto> reviewDtos = new ArrayList<>();
+        String title = "test title";
+        String author = "test author";
+        double rating = 4.5;
+        int bookPage = 300;
+        String language = "English";
+        List<String> categories = List.of("Fiction");
+        LocalDate publishedAt = LocalDate.now();
+        LocalDate createdAt = LocalDate.now();
+        String excerpt = "test excerpt";
+        String content = "<html><h1>Hello</html>";
+        String url = "http://test.com";
+
+        ReviewDto review1 = new ReviewDto(id,
+            adminUserId,
+            title,
+            author,
+            rating,
+            bookPage,
+            language,
+            categories,
+            publishedAt,
+            createdAt,
+            coverImage,
+            excerpt,
+            content,
+            url
+        );
+        reviewDtos.add(review1);
+
+        Mockito.when(reviewService.getReview(anyString(), anyString()))
+            .thenReturn(review1);
+//        ClassPathResource classPathResource = new ClassPathResource("IlkbaharRuyasi.jpg");
+//        Mockito.when(storageService.loadAsResource(anyString()))
+//            .thenReturn(classPathResource);
         Mockito.when(userService.getUserIdByUsername(anyString()))
             .thenReturn(adminUserId);
 
         //when
         ResultActions perform = mockMvc.perform(get("/admin/reviews/{id}/image", id)
             .with(httpBasic("NilKim", "1234"))
-            .contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE));
+            .contentType(MediaType.APPLICATION_JSON));
 
         //then
         perform
@@ -304,12 +344,14 @@ public class ReviewControllerTest {
             .andDo(document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                responseHeaders(
-                    headerWithName(HttpHeaders.CONTENT_TYPE).description(
-                        "The content type of the file"),
-                    headerWithName(HttpHeaders.CONTENT_DISPOSITION).description(
-                        "File download disposition and filename")
-                )
+                responseFields(fieldWithPath("imageUrl").description(
+                    "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg"))
+//                responseHeaders(
+//                    headerWithName(HttpHeaders.CONTENT_TYPE).description(
+//                        "The content type of the file"),
+//                    headerWithName(HttpHeaders.CONTENT_DISPOSITION).description(
+//                        "File download disposition and filename")
+//                )
             ));
     }
 }

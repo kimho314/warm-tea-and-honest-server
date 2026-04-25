@@ -43,6 +43,7 @@ public class ReviewService {
         return bookReview.getCoverImage();
     }
 
+
     public GetReviewsRespDto getReviews(@NonNull String adminUserId,
         @NonNull Integer page,
         @NonNull Integer offset) {

@@ -22,6 +22,7 @@ public class BookReviewEntity extends BaseEntity {
     private List<String> categories = new ArrayList<>();
     private Instant publishedAt;
     private String coverImage;
+    private String imageUrl;
     private String contents;
     private String excerpt;
 
@@ -39,7 +40,8 @@ public class BookReviewEntity extends BaseEntity {
         Instant publishedAt,
         String coverImage,
         String contents,
-        String excerpt) {
+        String excerpt,
+        String imageUrl) {
         this(null,
             adminUserId,
             title,
@@ -51,7 +53,8 @@ public class BookReviewEntity extends BaseEntity {
             publishedAt,
             coverImage,
             contents,
-            excerpt);
+            excerpt,
+            imageUrl);
     }
 
     public BookReviewEntity(ObjectId id,
@@ -65,7 +68,9 @@ public class BookReviewEntity extends BaseEntity {
         Instant publishedAt,
         String coverImage,
         String contents,
-        String excerpt) {
+        String excerpt,
+        String imageUrl
+    ) {
         this.id = id;
         this.adminUserId = adminUserId;
         this.title = title;
@@ -78,6 +83,7 @@ public class BookReviewEntity extends BaseEntity {
         this.coverImage = coverImage;
         this.contents = contents;
         this.excerpt = excerpt;
+        this.imageUrl = imageUrl;
     }
 
     public ObjectId getId() {
@@ -126,6 +132,10 @@ public class BookReviewEntity extends BaseEntity {
 
     public String getContents() {
         return contents;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     @Override

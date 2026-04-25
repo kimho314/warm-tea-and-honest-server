@@ -1,13 +1,15 @@
 package com.luna.warmteaandhonestreviews.controller;
 
+import com.luna.warmteaandhonestreviews.dto.GetReviewImageRespDto;
 import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewReqDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewRespDto;
 import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
-import com.luna.warmteaandhonestreviews.service.StorageService;
+import com.luna.warmteaandhonestreviews.service.S3Service;
 import com.luna.warmteaandhonestreviews.service.UserService;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -15,9 +17,7 @@ import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,20 +36,20 @@ public class ReviewController {
 
     private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
     private final ReviewService reviewService;
-    private final StorageService storageService;
     private final UserService userService;
     private final CategoryService categoryService;
+    private final S3Service s3Service;
 
     public ReviewController(
         ReviewService reviewService,
-        StorageService storageService,
         UserService userService,
-        CategoryService categoryService
+        CategoryService categoryService,
+        S3Service s3Service
     ) {
         this.reviewService = reviewService;
-        this.storageService = storageService;
         this.userService = userService;
         this.categoryService = categoryService;
+        this.s3Service = s3Service;
     }
 
     @GetMapping(value = "/admin/reviews/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,11 +100,17 @@ public class ReviewController {
         }
 
         String adminUserId = userService.getUserIdByUsername(userDetails.getUsername());
-        storageService.store(file);
-
         List<String> categories = convertCategoryJsonToList(categoryJson);
         // check if there is new category from MongoDB, if not save it
         categoryService.saveNewCategories(categories);
+
+        String imageUrl;
+        try {
+            imageUrl = s3Service.getURL(file);
+        } catch (IOException e) {
+            log.error("Failed to get URL from S3Resource: {}", e.getMessage());
+            throw new RuntimeException("Failed to get URL from S3Resource");
+        }
 
         SaveReviewRespDto resp = reviewService.save(
             new SaveReviewReqDto(
@@ -118,7 +124,8 @@ public class ReviewController {
                 LocalDate.parse(publishedAt),
                 excerpt,
                 file.getOriginalFilename(),
-                contents
+                contents,
+                imageUrl
             )
         );
         return ResponseEntity.ok(resp);
@@ -131,21 +138,16 @@ public class ReviewController {
     }
 
 
-    @GetMapping(value = "/admin/reviews/{id}/image", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> getImage(
+    @GetMapping(value = "/admin/reviews/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetReviewImageRespDto> getImage(
         @PathVariable("id") String id,
         @AuthenticationPrincipal UserDetails userDetails
     ) {
-        log.info("name: {}, authority: {}", userDetails.getUsername(),
-            userDetails.getAuthorities());
         String adminUserId = userService.getUserIdByUsername(userDetails.getUsername());
-        String reviewImage = reviewService.getReviewImage(adminUserId, id);
+        ReviewDto review = reviewService.getReview(adminUserId, id);
 
-        Resource resource = storageService.loadAsResource(reviewImage);
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + resource.getFilename() + "\"")
-            .body(resource);
+            .body(new GetReviewImageRespDto(review.imageUrl()));
     }
 
 }

@@ -70,7 +70,13 @@ public class S3ClientTest {
             resource.getInputStream(),
             objectMetadata
         );
-        log.info("stored={}", stored.toString());
+        log.info("stored={}, url={}", stored.toString(), stored.getURL());
 
+    }
+
+    @Test
+    void download() throws IOException {
+        S3Resource download = s3Template.download(bucketName, "dev/wheelie-awkward-romance.jpg");
+        log.info("downloaded={}, url={}", download.toString(), download.getURL());
     }
 }

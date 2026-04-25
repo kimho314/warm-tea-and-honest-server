@@ -28,7 +28,8 @@ public class AbstractTest {
         LocalDateTime.now().toInstant(ZoneOffset.UTC),
         "/image1",
         "contents1",
-        "excerpt1");
+        "excerpt1",
+        "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg");
     public static BookReviewEntity bookReview2 = new BookReviewEntity(adminUser1.getId(),
         "title2",
         "author2",
@@ -39,5 +40,6 @@ public class AbstractTest {
         LocalDateTime.now().toInstant(ZoneOffset.UTC),
         "/image2",
         "contents2",
-        "excerpt2");
+        "excerpt2",
+        "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg");
 }
