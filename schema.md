@@ -15,16 +15,17 @@ This document defines the MongoDB schema for the **Book Review Admin System**.
 * Keep schema simple and extensible
 * No user registration (admin-only system)
 * Dynamic category management
+* **AWS S3 integration** for cover image storage
 
 ---
 
 ## 2. Collections Overview
 
-| Collection Name | Description                             | Entity Class         |
-| --------------- | --------------------------------------- | -------------------- |
-| `users`         | Stores admin login credentials          | `UserEntity`         |
-| `book_reviews`  | Stores book reviews created by admins   | `BookReviewEntity`   |
-| `categories`    | Stores book categories/tags             | `CategoryEntity`     |
+| Collection Name | Description                           | Entity Class       |
+|-----------------|---------------------------------------|--------------------|
+| `users`         | Stores admin login credentials        | `UserEntity`       |
+| `book_reviews`  | Stores book reviews created by admins | `BookReviewEntity` |
+| `categories`    | Stores book categories/tags           | `CategoryEntity`   |
 
 ---
 
@@ -57,14 +58,14 @@ Stores administrator authentication data.
 
 ### 3.3 Field Definitions
 
-| Field        | Type     | Required | Description                     |
-|--------------| -------- | -------- | ------------------------------- |
-| `_id`        | ObjectId | Yes      | Primary key                     |
-| `username`   | String   | Yes      | Login identifier (unique)       |
-| `password`   | String   | Yes      | Encoded password (e.g., BCrypt) |
-| `role`       | String   | Yes      | User role (e.g., `ROLE_ADMIN`)  |
-| `createdAt`  | Date     | Yes      | Account creation timestamp      |
-| `updatedAt`  | Date     | Yes      | Last modification timestamp     |
+| Field       | Type     | Required | Description                     |
+|-------------|----------|----------|---------------------------------|
+| `_id`       | ObjectId | Yes      | Primary key                     |
+| `username`  | String   | Yes      | Login identifier (unique)       |
+| `password`  | String   | Yes      | Encoded password (e.g., BCrypt) |
+| `role`      | String   | Yes      | User role (e.g., `ROLE_ADMIN`)  |
+| `createdAt` | Date     | Yes      | Account creation timestamp      |
+| `updatedAt` | Date     | Yes      | Last modification timestamp     |
 
 ---
 
@@ -76,7 +77,7 @@ Stores administrator authentication data.
 }
 ```
 
-* Unique index on `username`
+* Unique index on `username` (enforced by `UserRepository`)
 * Prevents duplicate admin accounts
 
 ---
@@ -105,9 +106,13 @@ Stores book reviews authored by admins.
   "rating": 4.5,
   "page": 320,
   "language": "English",
-  "categories": ["Self-Help", "Psychology"],
+  "categories": [
+    "Self-Help",
+    "Psychology"
+  ],
   "publishedAt": "2026-01-18T09:00:00Z",
   "coverImage": "atomic-habits.jpg",
+  "imageUrl": "https://s3.amazonaws.com/your-bucket/atomic-habits.jpg",
   "contents": "<p>This book explains...</p>",
   "excerpt": "A short summary of the review.",
   "createdAt": "2026-01-18T09:00:00Z",
@@ -119,22 +124,23 @@ Stores book reviews authored by admins.
 
 ### 4.3 Field Definitions
 
-| Field           | Type     | Required | Description                      |
-| --------------- | -------- | -------- | -------------------------------- |
-| `_id`           | ObjectId | Yes      | Primary key                      |
-| `adminUserId`   | ObjectId | Yes      | Reference to `users._id`         |
-| `title`         | String   | Yes      | Book title                       |
-| `author`        | String   | Yes      | Book author                      |
-| `rating`        | Number   | Yes      | Rating (e.g., 0.0 - 5.0)         |
-| `page`          | Number   | Yes      | Number of pages                  |
-| `language`      | String   | Yes      | Book language                    |
-| `categories`    | Array    | Yes      | List of category names (Strings) |
-| `publishedAt`   | Date     | Yes      | Review publication date          |
-| `coverImage`    | String   | Yes      | Filename of the cover image      |
-| `contents`      | String   | Yes      | Review body content              |
-| `excerpt`       | String   | No       | Brief summary of the review      |
-| `createdAt`     | Date     | Yes      | Creation timestamp               |
-| `updatedAt`     | Date     | Yes      | Last update timestamp            |
+| Field         | Type     | Required | Description                      |
+|---------------|----------|----------|----------------------------------|
+| `_id`         | ObjectId | Yes      | Primary key                      |
+| `adminUserId` | ObjectId | Yes      | Reference to `users._id`         |
+| `title`       | String   | Yes      | Book title                       |
+| `author`      | String   | Yes      | Book author                      |
+| `rating`      | Number   | Yes      | Rating (e.g., 0.0 - 5.0)         |
+| `page`        | Number   | Yes      | Number of pages                  |
+| `language`    | String   | Yes      | Book language                    |
+| `categories`  | Array    | Yes      | List of category names (Strings) |
+| `publishedAt` | Date     | Yes      | Review publication date          |
+| `coverImage`  | String   | Yes      | Filename of the cover image      |
+| `imageUrl`    | String   | No       | Full URL of the cover image (S3) |
+| `contents`    | String   | Yes      | Review body content              |
+| `excerpt`     | String   | No       | Brief summary of the review      |
+| `createdAt`   | Date     | Yes      | Creation timestamp               |
+| `updatedAt`   | Date     | Yes      | Last update timestamp            |
 
 ---
 
@@ -143,7 +149,9 @@ Stores book reviews authored by admins.
 ```js
 {
   publishedAt: -1,
-  adminUserId: 1
+      adminUserId
+:
+  1
 }
 ```
 
@@ -175,12 +183,24 @@ Stores a master list of categories used across book reviews.
 
 ### 5.3 Field Definitions
 
-| Field        | Type     | Required | Description                 |
-|--------------| -------- | -------- | --------------------------- |
-| `_id`        | ObjectId | Yes      | Primary key                 |
-| `name`       | String   | Yes      | Category name (unique)      |
-| `createdAt`  | Date     | Yes      | Creation timestamp          |
-| `updatedAt`  | Date     | Yes      | Last modification timestamp |
+| Field       | Type     | Required | Description                 |
+|-------------|----------|----------|-----------------------------|
+| `_id`       | ObjectId | Yes      | Primary key                 |
+| `name`      | String   | Yes      | Category name (unique)      |
+| `createdAt` | Date     | Yes      | Creation timestamp          |
+| `updatedAt` | Date     | Yes      | Last modification timestamp |
+
+---
+
+### 5.4 Indexes
+
+```js
+{
+  name: 1
+}
+```
+
+* Unique index on `name` (enforced by `CategoryRepository`)
 
 ---
 
@@ -202,7 +222,9 @@ users (1) ──── (N) book_reviews
 * Passwords are **never stored in plain text** (using Spring Security's `PasswordEncoder`)
 * Authentication is handled via **HTTP Basic** (managed by `SecurityConfig`)
 * `adminUserId` is resolved from the authenticated `UserDetails` in `ReviewController`
-* Entities include `createdAt` and `updatedAt` via Spring Data's `@CreatedDate` and `@LastModifiedDate` annotations.
+* `imageUrl` is a full S3 URL generated and managed by `S3Service`
+* Entities include `createdAt` and `updatedAt` via Spring Data's `@CreatedDate` and
+  `@LastModifiedDate` annotations.
 
 ---
 
