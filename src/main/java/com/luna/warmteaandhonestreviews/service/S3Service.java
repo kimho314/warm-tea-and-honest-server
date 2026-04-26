@@ -27,9 +27,14 @@ public class S3Service {
         this.bucketName = bucketName;
     }
 
-    public String getURL(MultipartFile file) throws IOException {
+    public String getURL(MultipartFile file) {
         S3Resource s3Resource = upload(file);
-        return s3Resource.getURL().toString();
+        try {
+            return s3Resource.getURL().toString();
+        } catch (IOException e) {
+            log.error("Failed to get URL from S3Resource: {}", e.getMessage());
+            throw new RuntimeException("Failed to get URL from S3Resource");
+        }
     }
 
     public S3Resource upload(MultipartFile file) {

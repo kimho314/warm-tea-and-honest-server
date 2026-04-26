@@ -9,7 +9,6 @@ import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
 import com.luna.warmteaandhonestreviews.service.S3Service;
 import com.luna.warmteaandhonestreviews.service.UserService;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -104,13 +103,7 @@ public class ReviewController {
         // check if there is new category from MongoDB, if not save it
         categoryService.saveNewCategories(categories);
 
-        String imageUrl;
-        try {
-            imageUrl = s3Service.getURL(file);
-        } catch (IOException e) {
-            log.error("Failed to get URL from S3Resource: {}", e.getMessage());
-            throw new RuntimeException("Failed to get URL from S3Resource");
-        }
+        String imageUrl = s3Service.getURL(file);
 
         SaveReviewRespDto resp = reviewService.save(
             new SaveReviewReqDto(
