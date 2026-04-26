@@ -1,5 +1,6 @@
 package com.luna.warmteaandhonestreviews.controller;
 
+import com.luna.warmteaandhonestreviews.core.JsonUtility;
 import com.luna.warmteaandhonestreviews.dto.GetReviewImageRespDto;
 import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
@@ -10,7 +11,6 @@ import com.luna.warmteaandhonestreviews.service.ReviewService;
 import com.luna.warmteaandhonestreviews.service.S3Service;
 import com.luna.warmteaandhonestreviews.service.UserService;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.jspecify.annotations.NonNull;
@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import tools.jackson.databind.ObjectMapper;
 
 @RestController
 public class ReviewController {
@@ -99,7 +98,7 @@ public class ReviewController {
         }
 
         String adminUserId = userService.getUserIdByUsername(userDetails.getUsername());
-        List<String> categories = convertCategoryJsonToList(categoryJson);
+        List<String> categories = JsonUtility.convertCategoryJsonToList(categoryJson);
         // check if there is new category from MongoDB, if not save it
         categoryService.saveNewCategories(categories);
 
@@ -122,12 +121,6 @@ public class ReviewController {
             )
         );
         return ResponseEntity.ok(resp);
-    }
-
-    private @NonNull List<String> convertCategoryJsonToList(String categoryJson) {
-        ObjectMapper mapper = new ObjectMapper();
-        return Arrays.stream(mapper.readValue(categoryJson, String[].class))
-            .toList();
     }
 
 
