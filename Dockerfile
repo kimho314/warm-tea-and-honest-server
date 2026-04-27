@@ -23,6 +23,11 @@ RUN useradd -ms /bin/bash springuser
 
 COPY --from=builder /build/build/libs/*.jar app.jar
 
+# create public directory and set permissions
+RUN mkdir -p /app/public \
+    && chown -R springuser:springuser /app \
+    && chmod -R 755 /app/public
+
 # security
 RUN chown springuser:springuser app.jar
 USER springuser
@@ -33,5 +38,6 @@ EXPOSE 8080
 ENTRYPOINT ["java", \
 "-XX:MaxRAMPercentage=80", \
 "-XX:+UseG1GC", \
+"-Dspring.profiles.active=prod", \
 "-jar", \
 "/app/app.jar"]
