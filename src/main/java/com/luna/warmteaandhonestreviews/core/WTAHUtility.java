@@ -21,7 +21,7 @@ public class WTAHUtility {
         return title
             .trim()
             .toLowerCase()
-            .replaceAll("[^a-z0-9]+", "_")
-            .replaceAll("^_+|_+$", "");
+            .replaceAll("[^a-z0-9]+", "-")
+            .replaceAll("^-+|-+$", "");
     }
 }

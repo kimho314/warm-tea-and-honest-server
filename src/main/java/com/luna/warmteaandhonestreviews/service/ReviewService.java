@@ -24,6 +24,14 @@ public class ReviewService {
         this.bookReviewRepository = bookReviewRepository;
     }
 
+    public ReviewDto getReview(@NonNull String reviewId) {
+        BookReviewEntity bookReview = bookReviewRepository.findById(new ObjectId(reviewId))
+            .orElseThrow(
+                () -> new ReviewNotFoundException("Review not found with id: " + reviewId));
+
+        return ReviewDto.of(bookReview);
+    }
+
     public ReviewDto getReview(@NonNull String adminUserId, @NonNull String reviewId) {
         BookReviewEntity bookReview = bookReviewRepository.findByAdminUserIdAndId(
             new ObjectId(adminUserId),

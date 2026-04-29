@@ -141,6 +141,10 @@ public class BookReviewEntity extends BaseEntity {
         return imageUrl;
     }
 
+    public String getSlug() {
+        return slug;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

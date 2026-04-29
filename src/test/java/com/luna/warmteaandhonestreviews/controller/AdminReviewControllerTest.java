@@ -85,6 +85,7 @@ public class AdminReviewControllerTest {
         String id = UUID.randomUUID().toString();
         String adminUserID = "162a59e1-571f-42a3-a41a-edc83b03618a";
         String title = "test title";
+        String slug = "test-title";
         String author = "test author";
         double rating = 4.5;
         int page = 300;
@@ -102,6 +103,7 @@ public class AdminReviewControllerTest {
                 id,
                 adminUserID,
                 title,
+                slug,
                 author,
                 rating,
                 page,
@@ -133,6 +135,7 @@ public class AdminReviewControllerTest {
                 responseFields(fieldWithPath("id").description("review id"),
                     fieldWithPath("adminUserId").description("review admin user id"),
                     fieldWithPath("title").description("review title"),
+                    fieldWithPath("slug").description("review slug"),
                     fieldWithPath("author").description("review author"),
                     fieldWithPath("rating").description("review rating"),
                     fieldWithPath("page").description("review page"),
@@ -157,6 +160,7 @@ public class AdminReviewControllerTest {
         List<ReviewDto> reviewDtos = new ArrayList<>();
         String id = UUID.randomUUID().toString();
         String title = "test title";
+        String slug = "test-title";
         String author = "test author";
         double rating = 4.5;
         int bookPage = 300;
@@ -172,6 +176,7 @@ public class AdminReviewControllerTest {
         ReviewDto review1 = new ReviewDto(id,
             adminUserId,
             title,
+            slug,
             author,
             rating,
             bookPage,
@@ -215,6 +220,7 @@ public class AdminReviewControllerTest {
                     fieldWithPath("reviews[].id").description("An review's id"),
                     fieldWithPath("reviews[].adminUserId").description("An review's admin user id"),
                     fieldWithPath("reviews[].title").description("An review's title"),
+                    fieldWithPath("reviews[].slug").description("An review's slug"),
                     fieldWithPath("reviews[].author").description("An review's author"),
                     fieldWithPath("reviews[].rating").description("An review's rating"),
                     fieldWithPath("reviews[].page").description("An review's book page"),
@@ -297,6 +303,7 @@ public class AdminReviewControllerTest {
 
         List<ReviewDto> reviewDtos = new ArrayList<>();
         String title = "test title";
+        String slug = "test-title";
         String author = "test author";
         double rating = 4.5;
         int bookPage = 300;
@@ -311,6 +318,7 @@ public class AdminReviewControllerTest {
         ReviewDto review1 = new ReviewDto(id,
             adminUserId,
             title,
+            slug,
             author,
             rating,
             bookPage,

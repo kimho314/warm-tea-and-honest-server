@@ -18,5 +18,7 @@ public interface BookReviewRepository extends MongoRepository<BookReviewEntity, 
     Optional<BookReviewEntity> findByAdminUserIdAndId(@NonNull ObjectId adminUserId,
         @NonNull ObjectId id);
 
+    Optional<BookReviewEntity> findById(@NonNull ObjectId id);
+
     Optional<BookReviewEntity> findByTitle(@NonNull String title);
 }
