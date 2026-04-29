@@ -1,6 +1,6 @@
 package com.luna.warmteaandhonestreviews.controller;
 
-import com.luna.warmteaandhonestreviews.core.JsonUtility;
+import com.luna.warmteaandhonestreviews.core.WTAHUtility;
 import com.luna.warmteaandhonestreviews.dto.GetReviewImageRespDto;
 import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
@@ -24,21 +24,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@RequestMapping("/admin/reviews")
 @RestController
-public class ReviewController {
+public class AdminReviewController {
 
-    private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
+    private static final Logger log = LoggerFactory.getLogger(AdminReviewController.class);
     private final ReviewService reviewService;
     private final UserService userService;
     private final CategoryService categoryService;
     private final S3Service s3Service;
 
-    public ReviewController(
+    public AdminReviewController(
         ReviewService reviewService,
         UserService userService,
         CategoryService categoryService,
@@ -50,7 +52,7 @@ public class ReviewController {
         this.s3Service = s3Service;
     }
 
-    @GetMapping(value = "/admin/reviews/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ReviewDto> getReview(
         @PathVariable(value = "id") String id,
         @AuthenticationPrincipal UserDetails userDetails
@@ -63,7 +65,7 @@ public class ReviewController {
         );
     }
 
-    @GetMapping(value = "/admin/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetReviewsRespDto> getReviews(
         @NonNull @RequestParam(defaultValue = "0") Integer page,
         @NonNull @RequestParam(defaultValue = "30") Integer offset,
@@ -77,7 +79,7 @@ public class ReviewController {
         );
     }
 
-    @PostMapping(value = "/admin/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SaveReviewRespDto> createReview(
         @RequestPart("cover") MultipartFile file,
         @RequestPart("title") String title,
@@ -98,7 +100,7 @@ public class ReviewController {
         }
 
         String adminUserId = userService.getUserIdByUsername(userDetails.getUsername());
-        List<String> categories = JsonUtility.convertCategoryJsonToList(categoryJson);
+        List<String> categories = WTAHUtility.convertCategoryJsonToList(categoryJson);
         // check if there is new category from MongoDB, if not save it
         categoryService.saveNewCategories(categories);
 
@@ -124,7 +126,7 @@ public class ReviewController {
     }
 
 
-    @GetMapping(value = "/admin/reviews/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetReviewImageRespDto> getImage(
         @PathVariable("id") String id,
         @AuthenticationPrincipal UserDetails userDetails

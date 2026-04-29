@@ -51,9 +51,9 @@ import org.springframework.web.context.WebApplicationContext;
 import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(RestDocumentationExtension.class)
-@WebMvcTest(ReviewController.class)
+@WebMvcTest(AdminReviewController.class)
 @WithMockUser(username = "NilKim", roles = "ADMIN", password = "1234")
-public class ReviewControllerTest {
+public class AdminReviewControllerTest {
 
     private MockMvc mockMvc;
 

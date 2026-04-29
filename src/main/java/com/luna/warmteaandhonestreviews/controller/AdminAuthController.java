@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class AuthController {
+public class AdminAuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+    private static final Logger log = LoggerFactory.getLogger(AdminAuthController.class);
     private final UserService userService;
 
-    public AuthController(UserService userService) {
+    public AdminAuthController(UserService userService) {
         this.userService = userService;
     }
 

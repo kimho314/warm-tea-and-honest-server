@@ -30,9 +30,9 @@ import org.springframework.web.context.WebApplicationContext;
 import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(RestDocumentationExtension.class)
-@WebMvcTest(AuthController.class)
+@WebMvcTest(AdminAuthController.class)
 @Import(SecurityConfig.class)
-public class AuthControllerTest {
+public class AdminAuthControllerTest {
 
     private MockMvc mockMvc;
 

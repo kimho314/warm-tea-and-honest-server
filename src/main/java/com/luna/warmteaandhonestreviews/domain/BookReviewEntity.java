@@ -1,5 +1,6 @@
 package com.luna.warmteaandhonestreviews.domain;
 
+import com.luna.warmteaandhonestreviews.core.WTAHUtility;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ public class BookReviewEntity extends BaseEntity {
     private ObjectId id;
     private ObjectId adminUserId;
     private String title;
+    private String slug;
     private String author;
     private Double rating;
     private Integer page;
@@ -74,6 +76,7 @@ public class BookReviewEntity extends BaseEntity {
         this.id = id;
         this.adminUserId = adminUserId;
         this.title = title;
+        this.slug = WTAHUtility.slugify(title);
         this.author = author;
         this.rating = rating;
         this.page = page;
