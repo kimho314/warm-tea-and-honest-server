@@ -181,4 +181,79 @@ public class ApiReviewControllerTest {
             ));
     }
 
+
+    @Test
+    void getRecentReviewsTest() throws Exception {
+        // given
+        String adminUserId = "162a59e1-571f-42a3-a41a-edc83b03618a";
+
+        List<ReviewDto> reviewDtos = new ArrayList<>();
+        String id = UUID.randomUUID().toString();
+        String title = "test title";
+        String slug = "test-title";
+        String author = "test author";
+        double rating = 4.5;
+        int bookPage = 300;
+        String language = "English";
+        List<String> categories = List.of("Fiction");
+        LocalDate publishedAt = LocalDate.now();
+        LocalDate createdAt = LocalDate.now();
+        String coverImage = "test cover image";
+        String excerpt = "test excerpt";
+        String content = "<html><h1>Hello</html>";
+        String url = "http://test.com";
+
+        ReviewDto review1 = new ReviewDto(id,
+            adminUserId,
+            title,
+            slug,
+            author,
+            rating,
+            bookPage,
+            language,
+            categories,
+            publishedAt,
+            createdAt,
+            coverImage,
+            excerpt,
+            content,
+            url
+        );
+        reviewDtos.add(review1);
+
+        String sort = "recent";
+        Mockito.when(reviewService.getRecentReviews(sort))
+            .thenReturn(reviewDtos);
+
+        // when
+        ResultActions perform = mockMvc.perform(
+            get("/api/reviews")
+                .queryParam("sort", sort)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // then
+        perform
+            .andExpect(status().isOk())
+            .andDo(document("{method-name}",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                    fieldWithPath("reviews[]").description("An array of reviews"),
+                    fieldWithPath("reviews[].id").description("An review's id"),
+                    fieldWithPath("reviews[].adminUserId").description("An review's admin user id"),
+                    fieldWithPath("reviews[].title").description("An review's title"),
+                    fieldWithPath("reviews[].slug").description("An review's slug"),
+                    fieldWithPath("reviews[].author").description("An review's author"),
+                    fieldWithPath("reviews[].rating").description("An review's rating"),
+                    fieldWithPath("reviews[].page").description("An review's book page"),
+                    fieldWithPath("reviews[].language").description("An review's language"),
+                    fieldWithPath("reviews[].categories").description("An review's category"),
+                    fieldWithPath("reviews[].publishedAt").description("An review's published at"),
+                    fieldWithPath("reviews[].createdAt").description("An review's created at"),
+                    fieldWithPath("reviews[].coverImage").description("An review's cover image"),
+                    fieldWithPath("reviews[].excerpt").description("An review's excerpt"),
+                    fieldWithPath("reviews[].content").description("review contents"),
+                    fieldWithPath("reviews[].imageUrl").description("test url")
+                )));
+    }
 }

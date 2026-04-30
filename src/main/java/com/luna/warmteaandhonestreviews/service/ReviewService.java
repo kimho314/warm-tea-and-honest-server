@@ -79,4 +79,12 @@ public class ReviewService {
     public Optional<ReviewDto> getByTitle(@NonNull String title) {
         return bookReviewRepository.findByTitle(title).map(ReviewDto::of);
     }
+
+    public List<ReviewDto> getRecentReviews(@NonNull String sort) {
+        List<ReviewDto> recentReviews = bookReviewRepository.findTop6ByOrderByCreatedAtDesc()
+            .stream()
+            .map(it -> ReviewDto.of(it))
+            .toList();
+        return recentReviews;
+    }
 }

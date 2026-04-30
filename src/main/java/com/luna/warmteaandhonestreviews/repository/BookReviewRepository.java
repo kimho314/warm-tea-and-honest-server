@@ -1,6 +1,7 @@
 package com.luna.warmteaandhonestreviews.repository;
 
 import com.luna.warmteaandhonestreviews.domain.BookReviewEntity;
+import java.util.List;
 import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NonNull;
@@ -22,4 +23,7 @@ public interface BookReviewRepository extends MongoRepository<BookReviewEntity, 
     Optional<BookReviewEntity> findById(@NonNull ObjectId id);
 
     Optional<BookReviewEntity> findByTitle(@NonNull String title);
+
+    List<BookReviewEntity> findTop6ByOrderByCreatedAtDesc();
+
 }

@@ -69,4 +69,15 @@ public class BookReviewRepositoryTest {
         assertThat(reviews.getTotalElements()).isEqualTo(2);
         assertThat(reviews.getContent()).hasSameElementsAs(list);
     }
+
+    @Test
+    void findTop6SortedByCreatedAt() {
+        //given
+
+        //when
+        List<BookReviewEntity> reviews = bookReviewRepository.findTop6ByOrderByCreatedAtDesc();
+
+        //then
+        log.info("reviews={}", reviews);
+    }
 }
