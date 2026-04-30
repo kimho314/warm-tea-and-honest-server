@@ -70,6 +70,7 @@ public class ReviewService {
             adminUsers.getSize());
     }
 
+
     public SaveReviewRespDto save(@NonNull SaveReviewReqDto saveReviewReqDto) {
         BookReviewEntity saved = bookReviewRepository.save(saveReviewReqDto.toEntity());
         return new SaveReviewRespDto(saved.getId().toString());

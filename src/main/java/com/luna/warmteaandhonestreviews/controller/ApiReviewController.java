@@ -1,5 +1,6 @@
 package com.luna.warmteaandhonestreviews.controller;
 
+import com.luna.warmteaandhonestreviews.dto.GetReviewImageRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
@@ -39,5 +40,13 @@ public class ApiReviewController {
         return ResponseEntity.ok(
             reviewService.getReview(id)
         );
+    }
+
+    @GetMapping(value = "/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetReviewImageRespDto> getImage(@PathVariable("id") String id) {
+        ReviewDto review = reviewService.getReview(id);
+
+        return ResponseEntity.ok()
+            .body(new GetReviewImageRespDto(review.imageUrl()));
     }
 }

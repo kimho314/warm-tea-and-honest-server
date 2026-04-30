@@ -1,5 +1,6 @@
 package com.luna.warmteaandhonestreviews.controller;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -15,7 +16,9 @@ import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
 import com.luna.warmteaandhonestreviews.service.UserService;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -118,6 +121,63 @@ public class ApiReviewControllerTest {
                     fieldWithPath("excerpt").description("review excerpt"),
                     fieldWithPath("imageUrl").description("test url"),
                     fieldWithPath("content").description("review contents"))
+            ));
+    }
+
+    @Test
+    void getApiReviewImageTest() throws Exception {
+        //given
+        String id = UUID.randomUUID().toString();
+        String adminUserId = "162a59e1-571f-42a3-a41a-edc83b03618a";
+        String coverImage = "test cover image";
+
+        List<ReviewDto> reviewDtos = new ArrayList<>();
+        String title = "test title";
+        String slug = "test-title";
+        String author = "test author";
+        double rating = 4.5;
+        int bookPage = 300;
+        String language = "English";
+        List<String> categories = List.of("Fiction");
+        LocalDate publishedAt = LocalDate.now();
+        LocalDate createdAt = LocalDate.now();
+        String excerpt = "test excerpt";
+        String content = "<html><h1>Hello</html>";
+        String url = "http://test.com";
+
+        ReviewDto review1 = new ReviewDto(id,
+            adminUserId,
+            title,
+            slug,
+            author,
+            rating,
+            bookPage,
+            language,
+            categories,
+            publishedAt,
+            createdAt,
+            coverImage,
+            excerpt,
+            content,
+            url
+        );
+        reviewDtos.add(review1);
+
+        Mockito.when(reviewService.getReview(anyString()))
+            .thenReturn(review1);
+
+        //when
+        ResultActions perform = mockMvc.perform(get("/api/reviews/{id}/image", id)
+            .contentType(MediaType.APPLICATION_JSON));
+
+        //then
+        perform
+            .andExpect(status().isOk())
+            .andDo(document("{method-name}",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(fieldWithPath("imageUrl").description(
+                    "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg"))
             ));
     }
 
