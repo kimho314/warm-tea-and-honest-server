@@ -6,9 +6,10 @@ import com.luna.warmteaandhonestreviews.AbstractTest;
 import com.luna.warmteaandhonestreviews.config.MongoDBConfig;
 import com.luna.warmteaandhonestreviews.domain.BookReviewEntity;
 import com.luna.warmteaandhonestreviews.domain.UserEntity;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +18,9 @@ import org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
-@Import(MongoDBConfig.class)
+@Import({MongoDBConfig.class, BookReviewRepositoryCustom.class})
 @DataMongoTest
 public class BookReviewRepositoryTest {
 
@@ -26,11 +28,15 @@ public class BookReviewRepositoryTest {
 
     @Autowired
     BookReviewRepository bookReviewRepository;
+    @Autowired
+    BookReviewRepositoryCustom bookReviewRepositoryCustom;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
-    @AfterEach
-    void tearDown() {
-        bookReviewRepository.deleteAll();
-    }
+//    @AfterEach
+//    void tearDown() {
+//        bookReviewRepository.deleteAll();
+//    }
 
     @Test
     void saveTest() {
@@ -78,6 +84,22 @@ public class BookReviewRepositoryTest {
         List<BookReviewEntity> reviews = bookReviewRepository.findTop6ByOrderByCreatedAtDesc();
 
         //then
+        log.info("reviews={}", reviews);
+    }
+
+    @Test
+    void findReviewsWithCursor() {
+        //given
+        Instant instant = Instant.parse("2026-05-01T09:02:10.425Z");
+        String id = "69f46c1221ad3eeeebcc8b66";
+
+        //when
+        List<BookReviewEntity> reviews = bookReviewRepositoryCustom.findReviews(new ObjectId(id),
+            instant,
+            3);
+
+        //then
+        assertThat(reviews).hasSize(3);
         log.info("reviews={}", reviews);
     }
 }
