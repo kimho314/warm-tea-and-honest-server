@@ -70,6 +70,23 @@ public class ReviewService {
             adminUsers.getSize());
     }
 
+    public GetReviewsRespDto getReviews(
+        @NonNull Integer page,
+        @NonNull Integer offset) {
+        Page<BookReviewEntity> adminUsers = bookReviewRepository.findAll(
+            PageRequest.of(page, offset)
+        );
+
+        List<ReviewDto> reviewDtos = adminUsers.getContent().stream()
+            .map(ReviewDto::of)
+            .toList();
+
+        return new GetReviewsRespDto(reviewDtos,
+            adminUsers.getTotalElements(),
+            adminUsers.getNumber(),
+            adminUsers.getSize());
+    }
+
 
     public SaveReviewRespDto save(@NonNull SaveReviewReqDto saveReviewReqDto) {
         BookReviewEntity saved = bookReviewRepository.save(saveReviewReqDto.toEntity());

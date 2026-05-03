@@ -2,11 +2,13 @@ package com.luna.warmteaandhonestreviews.controller;
 
 import com.luna.warmteaandhonestreviews.dto.GetRecentReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.GetReviewImageRespDto;
+import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
 import com.luna.warmteaandhonestreviews.service.UserService;
 import java.util.List;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -53,11 +55,25 @@ public class ApiReviewController {
             .body(new GetReviewImageRespDto(review.imageUrl()));
     }
 
-    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "", params = "sort", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetRecentReviewsRespDto> getRecentReviews(
         @RequestParam("sort") String sort) {
         List<ReviewDto> recentReviews = reviewService.getRecentReviews(sort);
 
         return ResponseEntity.ok(new GetRecentReviewsRespDto(recentReviews));
+    }
+
+    @GetMapping(value = "", params = {"page",
+        "offset"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetReviewsRespDto> getReviews(
+        @NonNull @RequestParam(defaultValue = "0") Integer page,
+        @NonNull @RequestParam(defaultValue = "6") Integer offset
+    ) {
+        return ResponseEntity.ok(
+            reviewService.getReviews(
+                page,
+                offset
+            )
+        );
     }
 }

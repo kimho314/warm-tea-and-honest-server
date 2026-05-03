@@ -29,6 +29,7 @@ public class UserService {
                 () -> new UserNotFoundException("User not found with username: " + username));
     }
 
+
     public UserEntity getUserByUsername(@NonNull String username) {
         return userRepository.findByUsername(username)
             .orElseThrow(
