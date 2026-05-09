@@ -1,6 +1,7 @@
 package com.luna.warmteaandhonestreviews.service;
 
 import com.luna.warmteaandhonestreviews.domain.CategoryEntity;
+import com.luna.warmteaandhonestreviews.dto.CategoryDto;
 import com.luna.warmteaandhonestreviews.repository.CategoryRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -20,5 +21,12 @@ public class CategoryService {
                 categoryRepository.save(new CategoryEntity(category));
             }
         }
+    }
+
+
+    public List<CategoryDto> findAll() {
+        return categoryRepository.findAll().stream()
+            .map(CategoryDto::of)
+            .toList();
     }
 }

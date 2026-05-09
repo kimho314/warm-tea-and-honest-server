@@ -9,6 +9,9 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
@@ -109,6 +112,9 @@ public class ApiReviewControllerTest {
             .andDo(document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                pathParameters(
+                    parameterWithName("id").description("review id")
+                ),
                 responseFields(fieldWithPath("id").description("review id"),
                     fieldWithPath("adminUserId").description("review admin user id"),
                     fieldWithPath("title").description("review title"),
@@ -179,6 +185,9 @@ public class ApiReviewControllerTest {
             .andDo(document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                pathParameters(
+                    parameterWithName("id").description("review id")
+                ),
                 responseFields(fieldWithPath("imageUrl").description(
                     "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg"))
             ));
@@ -240,6 +249,9 @@ public class ApiReviewControllerTest {
             .andDo(document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                queryParameters(
+                    parameterWithName("sort").description("sort by recent or popular")
+                ),
                 responseFields(
                     fieldWithPath("reviews[]").description("An array of reviews"),
                     fieldWithPath("reviews[].id").description("An review's id"),
@@ -321,6 +333,10 @@ public class ApiReviewControllerTest {
             .andDo(document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                queryParameters(
+                    parameterWithName("page").description("page number"),
+                    parameterWithName("offset").description("number of reviews to skip")
+                ),
                 responseFields(
                     fieldWithPath("reviews[]").description("An array of reviews"),
                     fieldWithPath("reviews[].id").description("An review's id"),
