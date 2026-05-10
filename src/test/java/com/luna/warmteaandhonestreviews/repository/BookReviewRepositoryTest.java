@@ -9,6 +9,7 @@ import com.luna.warmteaandhonestreviews.domain.UserEntity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -101,5 +102,20 @@ public class BookReviewRepositoryTest {
         //then
         assertThat(reviews).hasSize(3);
         log.info("reviews={}", reviews);
+    }
+
+    @Test
+    void findAllByCategories() {
+        //given
+        String category = "Fiction";
+//        String category = null;
+        //when
+        Page<BookReviewEntity> reviews = bookReviewRepositoryCustom.getBookReviews(
+            category,
+            PageRequest.of(0, 6));
+
+        //then
+        log.info("reviews={}", reviews.getContent());
+        Assertions.assertThat(reviews.getTotalElements()).isGreaterThan(0);
     }
 }

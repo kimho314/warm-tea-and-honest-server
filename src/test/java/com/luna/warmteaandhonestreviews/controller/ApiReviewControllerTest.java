@@ -314,7 +314,7 @@ public class ApiReviewControllerTest {
         int page = 0;
         int offset = 6;
         GetReviewsRespDto resp = new GetReviewsRespDto(reviewDtos, 1L, 0, 6);
-        Mockito.when(reviewService.getReviews(0, 6))
+        Mockito.when(reviewService.getReviews(0, 6, null))
             .thenReturn(resp);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -335,7 +335,8 @@ public class ApiReviewControllerTest {
                 preprocessResponse(prettyPrint()),
                 queryParameters(
                     parameterWithName("page").description("page number"),
-                    parameterWithName("offset").description("number of reviews to skip")
+                    parameterWithName("offset").description("number of reviews to skip"),
+                    parameterWithName("category").description("category name").optional()
                 ),
                 responseFields(
                     fieldWithPath("reviews[]").description("An array of reviews"),

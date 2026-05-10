@@ -7,21 +7,27 @@ import com.luna.warmteaandhonestreviews.dto.SaveReviewReqDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewRespDto;
 import com.luna.warmteaandhonestreviews.exception.ReviewNotFoundException;
 import com.luna.warmteaandhonestreviews.repository.BookReviewRepository;
+import com.luna.warmteaandhonestreviews.repository.BookReviewRepositoryCustom;
 import java.util.List;
 import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReviewService {
 
     private final BookReviewRepository bookReviewRepository;
+    private final BookReviewRepositoryCustom bookReviewRepositoryCustom;
 
-    public ReviewService(BookReviewRepository bookReviewRepository) {
+    public ReviewService(BookReviewRepository bookReviewRepository,
+        BookReviewRepositoryCustom bookReviewRepositoryCustom) {
         this.bookReviewRepository = bookReviewRepository;
+        this.bookReviewRepositoryCustom = bookReviewRepositoryCustom;
     }
 
     public ReviewDto getReview(@NonNull String reviewId) {
@@ -72,9 +78,12 @@ public class ReviewService {
 
     public GetReviewsRespDto getReviews(
         @NonNull Integer page,
-        @NonNull Integer offset) {
-        Page<BookReviewEntity> adminUsers = bookReviewRepository.findAll(
-            PageRequest.of(page, offset)
+        @NonNull Integer offset,
+        @Nullable String category
+    ) {
+        Page<BookReviewEntity> adminUsers = bookReviewRepositoryCustom.getBookReviews(
+            category,
+            PageRequest.of(page, offset, Sort.by("createdAt").descending())
         );
 
         List<ReviewDto> reviewDtos = adminUsers.getContent().stream()

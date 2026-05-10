@@ -10,7 +10,12 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -44,5 +49,18 @@ public class BookReviewRepositoryCustom {
         return docs.stream()
             .map(doc -> mongoTemplate.getConverter().read(BookReviewEntity.class, doc))
             .collect(Collectors.toList());
+    }
+
+    public Page<BookReviewEntity> getBookReviews(String category, Pageable pageable) {
+        Query query = new Query();
+
+        if (category != null && !category.isBlank()) {
+            query.addCriteria(Criteria.where("categories").in(category));
+        }
+        long total = mongoTemplate.count(query, BookReviewEntity.class);
+        query.with(pageable);
+        List<BookReviewEntity> reviews = mongoTemplate.find(query, BookReviewEntity.class);
+
+        return new PageImpl<>(reviews, pageable, total);
     }
 }

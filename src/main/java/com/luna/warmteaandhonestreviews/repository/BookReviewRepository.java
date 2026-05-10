@@ -26,4 +26,6 @@ public interface BookReviewRepository extends MongoRepository<BookReviewEntity, 
 
     List<BookReviewEntity> findTop6ByOrderByCreatedAtDesc();
 
+    Page<BookReviewEntity> findAllByCategories(List<String> categories, Pageable pageable);
+
 }

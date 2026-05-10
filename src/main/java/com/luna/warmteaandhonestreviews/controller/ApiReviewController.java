@@ -4,11 +4,10 @@ import com.luna.warmteaandhonestreviews.dto.GetRecentReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.GetReviewImageRespDto;
 import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
-import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
-import com.luna.warmteaandhonestreviews.service.UserService;
 import java.util.List;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -27,14 +26,9 @@ public class ApiReviewController {
 
     private static final Logger log = LoggerFactory.getLogger(ApiReviewController.class);
     private final ReviewService reviewService;
-    private final UserService userService;
-    private final CategoryService categoryService;
 
-    public ApiReviewController(ReviewService reviewService, UserService userService,
-        CategoryService categoryService) {
+    public ApiReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
-        this.userService = userService;
-        this.categoryService = categoryService;
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,13 +60,15 @@ public class ApiReviewController {
     @GetMapping(value = "", params = {"page",
         "offset"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetReviewsRespDto> getReviews(
-        @NonNull @RequestParam(defaultValue = "0") Integer page,
-        @NonNull @RequestParam(defaultValue = "6") Integer offset
+        @NonNull @RequestParam(defaultValue = "0", value = "page") Integer page,
+        @NonNull @RequestParam(defaultValue = "6", value = "offset") Integer offset,
+        @Nullable @RequestParam(required = false, value = "category") String category
     ) {
         return ResponseEntity.ok(
             reviewService.getReviews(
                 page,
-                offset
+                offset,
+                category
             )
         );
     }
