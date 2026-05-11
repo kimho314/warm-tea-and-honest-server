@@ -313,13 +313,15 @@ public class ApiReviewControllerTest {
 
         int page = 0;
         int offset = 6;
+        String category = "Fiction";
         GetReviewsRespDto resp = new GetReviewsRespDto(reviewDtos, 1L, 0, 6);
-        Mockito.when(reviewService.getReviews(0, 6, null))
+        Mockito.when(reviewService.getReviews(0, 6, category))
             .thenReturn(resp);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("page", String.valueOf(page));
         params.add("offset", String.valueOf(offset));
+        params.add("category", category);
 
         // when
         ResultActions perform = mockMvc.perform(
