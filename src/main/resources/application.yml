@@ -12,11 +12,6 @@ spring:
         static: eu-west-2
       s3:
         enabled: true
-  mongodb:
-    uri: mongodb+srv://hoseopi:password1234!@cluster0.5b3qylf.mongodb.net/?appName=Cluster0
-    database: lotus
-    representation:
-      uuid: standard
   docker:
     compose:
       enabled: false
