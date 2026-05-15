@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.multipart;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -361,5 +362,27 @@ public class AdminReviewControllerTest {
 //                        "File download disposition and filename")
 //                )
             ));
+    }
+
+    @Test
+    void deleteReviewTest() throws Exception {
+        //given
+        String reviewId = "6a05a6f0cc9b447b75164f77";
+
+        Mockito.doNothing().when(reviewService).deleteReview(reviewId);
+
+        //when
+        ResultActions perform = mockMvc.perform(
+            delete("/admin/reviews/{id}", reviewId)
+                .with(httpBasic("NilKim", "1234"))
+                .contentType(MediaType.APPLICATION_JSON));
+
+        //then
+        perform
+            .andExpect(status().isOk())
+            .andDo(document("{method-name}",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()))
+            );
     }
 }

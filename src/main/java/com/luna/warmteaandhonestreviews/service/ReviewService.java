@@ -13,6 +13,8 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReviewService {
 
+
+    private static final Logger log = LoggerFactory.getLogger(ReviewService.class);
     private final BookReviewRepository bookReviewRepository;
     private final BookReviewRepositoryCustom bookReviewRepositoryCustom;
 
@@ -118,5 +122,13 @@ public class ReviewService {
             .map(it -> ReviewDto.of(it))
             .toList();
         return recentReviews;
+    }
+
+    public void deleteReview(String id) {
+        if (!bookReviewRepository.existsById(id)) {
+            log.info("Review not found with id: {}", id);
+            return;
+        }
+        bookReviewRepository.deleteById(id);
     }
 }
