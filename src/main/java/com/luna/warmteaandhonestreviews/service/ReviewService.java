@@ -47,16 +47,22 @@ public class ReviewService {
         return ReviewDto.of(bookReview);
     }
 
-    public String getReviewImage(@NonNull String adminUserId, @NonNull String reviewId) {
-        BookReviewEntity bookReview = bookReviewRepository.findByAdminUserIdAndId(
-                new ObjectId(adminUserId),
-                new ObjectId(reviewId)
-            )
-            .orElseThrow(
-                () -> new ReviewNotFoundException("Review not found with id: " + reviewId));
-        return bookReview.getCoverImage();
-    }
+    public GetReviewsRespDto getReviews(
+        @NonNull Integer page,
+        @NonNull Integer offset) {
+        Page<BookReviewEntity> adminUsers = bookReviewRepository.findAll(
+            PageRequest.of(page, offset)
+        );
 
+        List<ReviewDto> reviewDtos = adminUsers.getContent().stream()
+            .map(ReviewDto::of)
+            .toList();
+
+        return new GetReviewsRespDto(reviewDtos,
+            adminUsers.getTotalElements(),
+            adminUsers.getNumber(),
+            adminUsers.getSize());
+    }
 
     public GetReviewsRespDto getReviews(@NonNull String adminUserId,
         @NonNull Integer page,

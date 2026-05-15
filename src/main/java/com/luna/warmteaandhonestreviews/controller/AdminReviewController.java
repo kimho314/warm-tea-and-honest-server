@@ -58,10 +58,7 @@ public class AdminReviewController {
         @AuthenticationPrincipal UserDetails userDetails
     ) {
         return ResponseEntity.ok(
-            reviewService.getReview(
-                userService.getUserIdByUsername(userDetails.getUsername()),
-                id
-            )
+            reviewService.getReview(id)
         );
     }
 
@@ -72,10 +69,7 @@ public class AdminReviewController {
         @AuthenticationPrincipal UserDetails userDetails
     ) {
         return ResponseEntity.ok(
-            reviewService.getReviews(userService.getUserIdByUsername(userDetails.getUsername()),
-                page,
-                offset
-            )
+            reviewService.getReviews(page, offset)
         );
     }
 
@@ -131,8 +125,7 @@ public class AdminReviewController {
         @PathVariable("id") String id,
         @AuthenticationPrincipal UserDetails userDetails
     ) {
-        String adminUserId = userService.getUserIdByUsername(userDetails.getUsername());
-        ReviewDto review = reviewService.getReview(adminUserId, id);
+        ReviewDto review = reviewService.getReview(id);
 
         return ResponseEntity.ok()
             .body(new GetReviewImageRespDto(review.imageUrl()));
