@@ -99,7 +99,7 @@ public class AdminReviewControllerTest {
         String content = "<html><h1>Hello</html>";
         String url = "http://test.com";
 
-        Mockito.when(reviewService.getReview(adminUserID, id))
+        Mockito.when(reviewService.getReview(id))
             .thenReturn(new ReviewDto(
                 id,
                 adminUserID,
@@ -117,9 +117,6 @@ public class AdminReviewControllerTest {
                 content,
                 url
             ));
-
-        Mockito.when(userService.getUserIdByUsername(anyString()))
-            .thenReturn(adminUserID);
 
         // when
         ResultActions perform = mockMvc.perform(
@@ -192,13 +189,11 @@ public class AdminReviewControllerTest {
         );
         reviewDtos.add(review1);
 
-        Mockito.when(reviewService.getReviews(adminUserId, page, offset))
+        Mockito.when(reviewService.getReviews(page, offset))
             .thenReturn(new GetReviewsRespDto(reviewDtos,
                 2L,
                 page,
                 offset));
-        Mockito.when(userService.getUserIdByUsername(anyString()))
-            .thenReturn(adminUserId);
 
         // when
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -334,13 +329,8 @@ public class AdminReviewControllerTest {
         );
         reviewDtos.add(review1);
 
-        Mockito.when(reviewService.getReview(anyString(), anyString()))
+        Mockito.when(reviewService.getReview(anyString()))
             .thenReturn(review1);
-//        ClassPathResource classPathResource = new ClassPathResource("IlkbaharRuyasi.jpg");
-//        Mockito.when(storageService.loadAsResource(anyString()))
-//            .thenReturn(classPathResource);
-        Mockito.when(userService.getUserIdByUsername(anyString()))
-            .thenReturn(adminUserId);
 
         //when
         ResultActions perform = mockMvc.perform(get("/admin/reviews/{id}/image", id)
@@ -355,12 +345,6 @@ public class AdminReviewControllerTest {
                 preprocessResponse(prettyPrint()),
                 responseFields(fieldWithPath("imageUrl").description(
                     "https://warm-tea-and-honest.s3.eu-west-2.amazonaws.com/dev/wheelie-awkward-romance.jpg"))
-//                responseHeaders(
-//                    headerWithName(HttpHeaders.CONTENT_TYPE).description(
-//                        "The content type of the file"),
-//                    headerWithName(HttpHeaders.CONTENT_DISPOSITION).description(
-//                        "File download disposition and filename")
-//                )
             ));
     }
 

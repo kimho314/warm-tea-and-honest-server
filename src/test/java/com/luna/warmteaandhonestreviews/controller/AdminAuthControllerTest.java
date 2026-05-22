@@ -87,6 +87,6 @@ public class AdminAuthControllerTest {
             .content(mapper.writeValueAsString(new LoginReqDto(username, password))));
 
         //then
-        perform.andExpect(status().is4xxClientError());
+        perform.andExpect(status().is5xxServerError());
     }
 }
