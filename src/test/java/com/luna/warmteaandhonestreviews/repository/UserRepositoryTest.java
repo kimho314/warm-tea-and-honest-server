@@ -40,5 +40,7 @@ public class UserRepositoryTest {
         log.info("saved={}", saved);
         assertThat(saved.getUsername()).isEqualTo("hoseopi");
         assertThat(saved.getPassword()).isEqualTo("1234");
+
+        userRepository.delete(saved);
     }
 }

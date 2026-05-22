@@ -31,5 +31,7 @@ public class CategoryRepositoryTest {
         //then
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getName()).isEqualTo("SyFi");
+
+        categoryRepository.delete(saved);
     }
 }
