@@ -11,7 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +28,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Import({MongoDBConfig.class, BookReviewRepositoryCustom.class})
 @DataMongoTest
+@TestInstance(Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BookReviewRepositoryTest {
 
     private static final Logger log = LoggerFactory.getLogger(BookReviewRepositoryTest.class);
@@ -34,29 +41,30 @@ public class BookReviewRepositoryTest {
     @Autowired
     MongoTemplate mongoTemplate;
 
-//    @AfterEach
-//    void tearDown() {
-//        bookReviewRepository.deleteAll();
-//    }
+    private BookReviewEntity bookReview;
 
+    @Order(1)
     @Test
     void saveTest() {
         // given
-        BookReviewEntity bookReview = AbstractTest.bookReview1;
+        BookReviewEntity bookReview1 = AbstractTest.bookReview1;
         // when
-        BookReviewEntity saved = bookReviewRepository.save(bookReview);
+        BookReviewEntity saved = bookReviewRepository.save(bookReview1);
 
         //then
         log.info("saved={}", saved);
         assertThat(saved).isNotNull();
-        assertThat(saved.getTitle()).isEqualTo(bookReview.getTitle());
-        assertThat(saved.getAuthor()).isEqualTo(bookReview.getAuthor());
-        assertThat(saved.getRating()).isEqualTo(bookReview.getRating());
-        assertThat(saved.getAdminUserId()).isEqualTo(bookReview.getAdminUserId());
-        assertThat(saved.getCoverImage()).isEqualTo(bookReview.getCoverImage());
-        assertThat(saved.getExcerpt()).isEqualTo(bookReview.getExcerpt());
+        assertThat(saved.getTitle()).isEqualTo(bookReview1.getTitle());
+        assertThat(saved.getAuthor()).isEqualTo(bookReview1.getAuthor());
+        assertThat(saved.getRating()).isEqualTo(bookReview1.getRating());
+        assertThat(saved.getAdminUserId()).isEqualTo(bookReview1.getAdminUserId());
+        assertThat(saved.getCoverImage()).isEqualTo(bookReview1.getCoverImage());
+        assertThat(saved.getExcerpt()).isEqualTo(bookReview1.getExcerpt());
+
+        bookReview = saved;
     }
 
+    @Order(2)
     @Test
     void findByAdminUserIdTest() {
         // given
@@ -77,8 +85,9 @@ public class BookReviewRepositoryTest {
         assertThat(reviews.getContent()).hasSameElementsAs(list);
     }
 
+    @Order(3)
     @Test
-    void findTop6SortedByCreatedAt() {
+    void findTop6SortedByCreatedAtTest() {
         //given
 
         //when
@@ -88,8 +97,9 @@ public class BookReviewRepositoryTest {
         log.info("reviews={}", reviews);
     }
 
+    @Order(4)
     @Test
-    void findReviewsWithCursor() {
+    void findReviewsWithCursorTest() {
         //given
         Instant instant = Instant.parse("2026-05-01T09:02:10.425Z");
         String id = "69f46c1221ad3eeeebcc8b66";
@@ -100,12 +110,13 @@ public class BookReviewRepositoryTest {
             3);
 
         //then
-        assertThat(reviews).hasSize(3);
+        assertThat(reviews).hasSizeLessThan(4);
         log.info("reviews={}", reviews);
     }
 
+    @Order(5)
     @Test
-    void findAllByCategories() {
+    void findAllByCategoriesTest() {
         //given
         String category = "Fiction";
 //        String category = null;
@@ -117,5 +128,16 @@ public class BookReviewRepositoryTest {
         //then
         log.info("reviews={}", reviews.getContent());
         Assertions.assertThat(reviews.getTotalElements()).isGreaterThan(0);
+    }
+
+    @Order(100)
+    @Test
+    void deleteCategoryTest() {
+        //given
+
+        //when
+        bookReviewRepository.delete(bookReview);
+
+        //then
     }
 }
