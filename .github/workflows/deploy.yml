@@ -57,8 +57,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/warm-tea-server:latest
-            ${{ secrets.DOCKER_USERNAME }}/warm-tea-server:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/warm-tea-and-honest-api:latest
+            ${{ secrets.DOCKER_USERNAME }}/warm-tea-and-honest-api:${{ github.sha }}
 
       - name: Deploy to Oracle Server via SSH
         uses: appleboy/ssh-action@v1
@@ -67,14 +67,14 @@ jobs:
           username: ${{ secrets.OCI_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/warm-tea-server:latest
-            docker stop warm-tea-server || true
-            docker rm warm-tea-server || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/warm-tea-and-honest-api:latest
+            docker stop warm-tea-and-honest-api || true
+            docker rm warm-tea-and-honest-api || true
             docker run -d \
-              --name warm-tea-server \
+              --name warm-tea-and-honest-api \
               --restart unless-stopped \
               -p 8080:8080 \
               -e SPRING_DATA_MONGODB_URI="${{ secrets.MONGODB_URI }}" \
               -e SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
               -e SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
-              ${{ secrets.DOCKER_USERNAME }}/warm-tea-server:latest
+              ${{ secrets.DOCKER_USERNAME }}/warm-tea-and-honest-api:latest
