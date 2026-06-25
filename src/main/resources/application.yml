@@ -34,7 +34,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "health,info,prometheus,metrics"
   health:
     mongodb:
       enabled: false
