@@ -47,6 +47,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-aspectj-test'
     runtimeOnly 'org.springframework.boot:spring-boot-docker-compose'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:4.0.0'
