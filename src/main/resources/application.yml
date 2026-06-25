@@ -31,6 +31,10 @@ server:
     accept-count: 100
     connection-timeout: 10000
 management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
   health:
     mongodb:
       enabled: false
