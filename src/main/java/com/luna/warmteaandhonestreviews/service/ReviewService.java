@@ -5,6 +5,7 @@ import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewReqDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewRespDto;
+import com.luna.warmteaandhonestreviews.dto.UpdateReviewRespDto;
 import com.luna.warmteaandhonestreviews.exception.ReviewNotFoundException;
 import com.luna.warmteaandhonestreviews.repository.BookReviewRepository;
 import com.luna.warmteaandhonestreviews.repository.BookReviewRepositoryCustom;
@@ -116,6 +117,11 @@ public class ReviewService {
         return bookReviewRepository.findByTitle(title).map(ReviewDto::of);
     }
 
+    public Optional<ReviewDto> getById(@NonNull String id) {
+        return bookReviewRepository.findById(new ObjectId(id))
+            .map(ReviewDto::of);
+    }
+
     public List<ReviewDto> getRecentReviews(@NonNull String sort) {
         List<ReviewDto> recentReviews = bookReviewRepository.findTop6ByOrderByCreatedAtDesc()
             .stream()
@@ -130,5 +136,33 @@ public class ReviewService {
             return;
         }
         bookReviewRepository.deleteById(id);
+    }
+
+    public UpdateReviewRespDto update(
+        @NonNull String id,
+        @Nullable String title,
+        @Nullable String author,
+        @Nullable Double rating,
+        @Nullable String contents,
+        @Nullable String publishedAt,
+        @Nullable Integer page,
+        @Nullable String language,
+        @Nullable String excerpt,
+        @Nullable String imageUrl
+    ) {
+        BookReviewEntity update = bookReviewRepositoryCustom.update(
+            id,
+            title,
+            author,
+            rating,
+            contents,
+            publishedAt,
+            page,
+            language,
+            excerpt,
+            imageUrl
+        );
+
+        return UpdateReviewRespDto.of(update);
     }
 }

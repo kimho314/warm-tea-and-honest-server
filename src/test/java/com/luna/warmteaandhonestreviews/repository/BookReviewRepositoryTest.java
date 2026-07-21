@@ -9,7 +9,6 @@ import com.luna.warmteaandhonestreviews.domain.UserEntity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -127,7 +126,32 @@ public class BookReviewRepositoryTest {
 
         //then
         log.info("reviews={}", reviews.getContent());
-        Assertions.assertThat(reviews.getTotalElements()).isGreaterThan(0);
+        assertThat(reviews.getTotalElements()).isGreaterThan(0);
+    }
+
+    @Order(10)
+    @Test
+    void updateById() {
+        //given
+        log.info("Before: {}", bookReview.getTitle());
+        //when
+        BookReviewEntity update = bookReviewRepositoryCustom.update(
+            bookReview.getId().toString(),
+            "updated title",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+
+        //then
+        assertThat(update).isNotNull();
+        log.info("After: {}", update.getTitle());
+        assertThat(update.getTitle()).isEqualTo("updated title");
     }
 
     @Order(100)
