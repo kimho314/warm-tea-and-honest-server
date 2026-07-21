@@ -6,6 +6,8 @@ import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewReqDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewRespDto;
+import com.luna.warmteaandhonestreviews.dto.UpdateReviewRespDto;
+import com.luna.warmteaandhonestreviews.exception.ReviewNotFoundException;
 import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
 import com.luna.warmteaandhonestreviews.service.S3Service;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -126,6 +129,48 @@ public class AdminReviewController {
         return ResponseEntity.ok(resp);
     }
 
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdateReviewRespDto> update(
+        @PathVariable(value = "id") String id,
+        @RequestPart(value = "cover", required = false) MultipartFile file,
+        @RequestPart(value = "title", required = false) String title,
+        @RequestPart(value = "author", required = false) String author,
+        @RequestPart(value = "rating", required = false) Double rating,
+        @RequestPart(value = "page", required = false) Integer page,
+        @RequestPart(value = "language", required = false) String language,
+        @RequestPart(value = "category", required = false) String categoryJson,
+        @RequestPart(value = "content", required = false) String contents,
+        @RequestPart(value = "publishedAt", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String publishedAt,
+        @RequestPart(value = "excerpt", required = false) String excerpt
+    ) {
+        Optional<ReviewDto> maybeReview = reviewService.getById(id);
+        if (maybeReview.isEmpty()) {
+            throw new ReviewNotFoundException(id + " not found");
+        }
+        String imageUrl = null;
+        if (file != null) {
+            imageUrl = s3Service.getURL(file);
+        }
+        if (categoryJson != null) {
+            List<String> categories = WTAHUtility.convertCategoryJsonToList(categoryJson);
+            categoryService.saveNewCategories(categories);
+        }
+
+        UpdateReviewRespDto review = reviewService.update(
+            id,
+            title,
+            author,
+            rating,
+            contents,
+            publishedAt,
+            page,
+            language,
+            excerpt,
+            imageUrl
+        );
+
+        return ResponseEntity.ok(review);
+    }
 
     @GetMapping(value = "/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetReviewImageRespDto> getImage(
