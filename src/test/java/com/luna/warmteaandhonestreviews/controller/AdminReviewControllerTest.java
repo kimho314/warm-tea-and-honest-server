@@ -13,12 +13,17 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.luna.warmteaandhonestreviews.dto.GetReviewsRespDto;
 import com.luna.warmteaandhonestreviews.dto.ReviewDto;
 import com.luna.warmteaandhonestreviews.dto.SaveReviewRespDto;
+import com.luna.warmteaandhonestreviews.dto.UpdateReviewRespDto;
 import com.luna.warmteaandhonestreviews.service.CategoryService;
 import com.luna.warmteaandhonestreviews.service.ReviewService;
 import com.luna.warmteaandhonestreviews.service.S3Service;
@@ -368,5 +373,96 @@ public class AdminReviewControllerTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()))
             );
+    }
+
+    @Test
+    void updateReviewTest() throws Exception {
+        // given
+        String adminUserId = "162a59e1-571f-42a3-a41a-edc83b03618a";
+        String id = UUID.randomUUID().toString();
+
+        List<ReviewDto> reviewDtos = new ArrayList<>();
+        String title = "test title";
+        String slug = "test-title";
+        String author = "test author";
+        double rating = 4.5;
+        int bookPage = 300;
+        String language = "English";
+        List<String> categories = List.of("Fiction");
+        LocalDate publishedAt = LocalDate.now();
+        LocalDate createdAt = LocalDate.now();
+        String excerpt = "test excerpt";
+        String content = "<html><h1>Hello</html>";
+        String url = "http://test.com";
+        String coverImage = "test cover image";
+
+        Mockito.when(reviewService.getById(id))
+            .thenReturn(Optional.of(
+                    new ReviewDto(
+                        id,
+                        adminUserId,
+                        title,
+                        slug,
+                        author,
+                        rating,
+                        bookPage,
+                        language,
+                        categories,
+                        publishedAt,
+                        createdAt,
+                        coverImage,
+                        excerpt,
+                        content,
+                        url
+                    )
+                )
+            );
+        Mockito.when(
+                reviewService.update(any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                    any()))
+            .thenReturn(new UpdateReviewRespDto(id));
+        Mockito.doNothing().when(categoryService).saveNewCategories(anyList());
+
+        // when
+        ResultActions perform = mockMvc.perform(multipart("/admin/reviews/{id}", id)
+            .with(request -> {
+                request.setMethod("PUT");
+                return request;
+            })
+            .with(httpBasic("NilKim", "1234"))
+            .part(new MockPart("title", null, "test title".getBytes(), MediaType.APPLICATION_JSON))
+            .part(new MockPart("author", null, author.getBytes(), MediaType.APPLICATION_JSON))
+            .part(new MockPart("rating", null, String.valueOf(rating).getBytes(),
+                MediaType.APPLICATION_JSON))
+            .part(new MockPart("page", null, String.valueOf(bookPage).getBytes(),
+                MediaType.APPLICATION_JSON))
+            .part(new MockPart("language", null, language.getBytes(), MediaType.APPLICATION_JSON))
+            .part(new MockPart("content", null, content.getBytes(), MediaType.APPLICATION_JSON))
+            .part(new MockPart("publishedAt", null, String.valueOf(publishedAt).getBytes(),
+                MediaType.APPLICATION_JSON))
+            .part(new MockPart("excerpt", null, excerpt.getBytes(), MediaType.APPLICATION_JSON)
+            ));
+
+        // then
+        perform
+            .andExpect(status().isOk())
+            .andDo(document("{method-name}",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(parameterWithName("id").description("review id")),
+                requestParts(
+                    partWithName("cover").description("수정할 리뷰 커버 이미지").optional(),
+                    partWithName("title").description("수정할 리뷰 제목").optional(),
+                    partWithName("author").description("수정할 저자명").optional(),
+                    partWithName("rating").description("수정할 평점").optional(),
+                    partWithName("page").description("수정할 페이지 수").optional(),
+                    partWithName("language").description("수정할 언어").optional(),
+                    partWithName("content").description("수정할 리뷰 본문").optional(),
+                    partWithName("publishedAt").description("수정할 출판일. 형식: yyyy-MM-dd").optional(),
+                    partWithName("excerpt").description("수정할 리뷰 요약").optional()
+                ),
+                responseFields(fieldWithPath("id").description("review id"))
+            ));
+
     }
 }
